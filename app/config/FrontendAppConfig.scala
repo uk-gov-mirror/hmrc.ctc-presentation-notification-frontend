@@ -27,6 +27,7 @@ class FrontendAppConfig @Inject() (config: Configuration, servicesConfig: MyServ
   val loginContinueUrl: String = config.get[String]("urls.loginContinue")
 
   val isPhase6Enabled: Boolean                    = config.get[Boolean]("feature-flags.phase-6-enabled")
+  val phase6APIEnabled: Boolean                   = config.get[Boolean]("feature-flags.phase-6-api-enabled")
   lazy val disableUnLocodeExtendedLookup: Boolean = config.get[Boolean]("feature-flags.disable-un-locode-extended-lookup")
 
   lazy val limitDateDaysBefore: Int = config.get[Int]("dates.limitDate.daysBefore")
