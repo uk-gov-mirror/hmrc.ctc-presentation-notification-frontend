@@ -38,7 +38,10 @@ class DepartureMovementConnectorSpec extends ItSpecBase with WireMockServerHandl
     _ => guiceApplicationBuilder().configure("feature-flags.phase-6-enabled" -> false)
 
   private lazy val phase6App: GuiceApplicationBuilder => GuiceApplicationBuilder =
-    _ => guiceApplicationBuilder().configure("feature-flags.phase-6-enabled" -> true)
+    _ =>
+      guiceApplicationBuilder()
+        .configure("feature-flags.phase-6-enabled" -> true)
+        .configure("feature-flags.phase-6-api-enabled" -> true)
 
   override def guiceApplicationBuilder(): GuiceApplicationBuilder =
     super
