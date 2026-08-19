@@ -40,13 +40,11 @@ class DepartureMovementConnector @Inject() (
     extends HttpReadsTry
     with Logging {
 
-  private val version = if config.phase6APIEnabled then 3.0 else 2.1
-
   private val jsonHeader: (String, String) =
-    HeaderNames.ACCEPT -> s"application/vnd.hmrc.$version+json"
+    HeaderNames.ACCEPT -> s"application/vnd.hmrc.3.0+json"
 
   private val xmlHeader: (String, String) =
-    HeaderNames.ACCEPT -> s"application/vnd.hmrc.$version+xml"
+    HeaderNames.ACCEPT -> s"application/vnd.hmrc.3.0+xml"
 
   def getMessages(departureId: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[DepartureMessages] = {
     val url = url"${config.commonTransitConventionTradersUrl}movements/departures/$departureId/messages"

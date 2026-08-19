@@ -37,7 +37,6 @@ import pages.transport.{ContainerIndicatorPage, InlandModePage, LimitDatePage}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.__
-import play.api.test.Helpers.running
 import scalaxb.XMLCalendar
 import services.DateTimeService
 
@@ -71,26 +70,10 @@ class SubmissionServiceSpec extends SpecBase with AppWithDefaultMockFixtures wit
   }
 
   "attributes" - {
-    "must assign phase ID" - {
-      "when phase6 disabled" in {
-        running(phase5App) {
-          app =>
-            val service = app.injector.instanceOf[SubmissionService]
-            val result  = service.attributes
-            result.keys.size mustEqual 1
-            result.get("@PhaseID").value.value.toString mustEqual "NCTS5.1"
-        }
-      }
-
-      "when phase6 enabled" in {
-        running(phase6App) {
-          app =>
-            val service = app.injector.instanceOf[SubmissionService]
-            val result  = service.attributes
-            result.keys.size mustEqual 1
-            result.get("@PhaseID").value.value.toString mustEqual "NCTS6"
-        }
-      }
+    "must assign phase ID" in {
+      val result = service.attributes
+      result.keys.size mustEqual 1
+      result.get("@PhaseID").value.value.toString mustEqual "NCTS6"
     }
   }
 

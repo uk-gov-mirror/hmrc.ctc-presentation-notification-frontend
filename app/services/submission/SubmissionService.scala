@@ -16,7 +16,6 @@
 
 package services.submission
 
-import config.FrontendAppConfig
 import connectors.DepartureMovementConnector
 import generated.*
 import models.reference.TransportMode.{BorderMode, InlandMode}
@@ -43,8 +42,7 @@ import scala.xml.{NamespaceBinding, NodeSeq}
 class SubmissionService @Inject() (
   dateTimeService: DateTimeService,
   messageIdentificationService: MessageIdentificationService,
-  connector: DepartureMovementConnector,
-  config: FrontendAppConfig
+  connector: DepartureMovementConnector
 ) {
 
   private val scope: NamespaceBinding = scalaxb.toScope(Some("ncts") -> "http://ncts.dgtaxud.ec")
@@ -77,7 +75,7 @@ class SubmissionService @Inject() (
   }
 
   def attributes: Map[String, DataRecord[?]] = {
-    val phaseId = if (config.phase6APIEnabled) NCTS6 else NCTS5u461
+    val phaseId = NCTS6
     Map("@PhaseID" -> DataRecord(PhaseIDtype.fromString(phaseId.toString, scope)))
   }
 
