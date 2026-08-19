@@ -17,7 +17,6 @@
 package models
 
 import cats.Order
-import config.FrontendAppConfig
 import play.api.libs.functional.syntax.*
 import play.api.libs.json.{__, Format, Json, Reads}
 
@@ -32,15 +31,11 @@ case class LocationOfGoodsIdentification(qualifier: String, description: String)
 
 object LocationOfGoodsIdentification extends DynamicEnumerableType[LocationOfGoodsIdentification] {
 
-  def reads(config: FrontendAppConfig): Reads[LocationOfGoodsIdentification] =
-    if (config.isPhase6Enabled) {
-      (
-        (__ \ "key").read[String] and
-          (__ \ "value").read[String]
-      )(LocationOfGoodsIdentification.apply)
-    } else {
-      Json.reads[LocationOfGoodsIdentification]
-    }
+  val reads: Reads[LocationOfGoodsIdentification] =
+    (
+      (__ \ "key").read[String] and
+        (__ \ "value").read[String]
+    )(LocationOfGoodsIdentification.apply)
 
   implicit val format: Format[LocationOfGoodsIdentification] = Json.format[LocationOfGoodsIdentification]
 

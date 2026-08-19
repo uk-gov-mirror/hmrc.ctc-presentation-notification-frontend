@@ -17,13 +17,10 @@
 package models
 
 import base.SpecBase
-import config.FrontendAppConfig
-import org.mockito.Mockito.when
 import org.scalacheck.Gen
 import play.api.libs.json.Json
 
 class LocationOfGoodsIdentificationSpec extends SpecBase {
-  private val mockFrontendAppConfig = mock[FrontendAppConfig]
 
   "TypeOfLocation" - {
 
@@ -43,39 +40,18 @@ class LocationOfGoodsIdentificationSpec extends SpecBase {
         }
       }
 
-      "when reading from reference data" - {
-        "when phase 5" in {
-          when(mockFrontendAppConfig.isPhase6Enabled).thenReturn(false)
-          forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
-            (code, description) =>
-              val value = LocationOfGoodsIdentification(code, description)
-              Json
-                .parse(s"""
-                          |{
-                          |  "qualifier": "$code",
-                          |  "description": "$description"
-                          |}
-                          |""".stripMargin)
-                .as[LocationOfGoodsIdentification](LocationOfGoodsIdentification.reads(mockFrontendAppConfig)) mustEqual value
-          }
-
-        }
-
-        "when phase 6" in {
-          when(mockFrontendAppConfig.isPhase6Enabled).thenReturn(true)
-          forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
-            (code, description) =>
-              val value = LocationOfGoodsIdentification(code, description)
-              Json
-                .parse(s"""
+      "when reading from reference data" in {
+        forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
+          (code, description) =>
+            val value = LocationOfGoodsIdentification(code, description)
+            Json
+              .parse(s"""
                           |{
                           |  "key": "$code",
                           |  "value": "$description"
                           |}
                           |""".stripMargin)
-                .as[LocationOfGoodsIdentification](LocationOfGoodsIdentification.reads(mockFrontendAppConfig)) mustEqual value
-          }
-
+              .as[LocationOfGoodsIdentification](LocationOfGoodsIdentification.reads) mustEqual value
         }
       }
     }

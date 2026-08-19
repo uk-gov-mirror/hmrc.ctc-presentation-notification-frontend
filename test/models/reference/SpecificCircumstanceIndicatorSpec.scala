@@ -18,15 +18,12 @@ package models.reference
 
 import base.SpecBase
 import cats.data.NonEmptySet
-import config.FrontendAppConfig
 import generators.Generators
-import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import play.api.libs.json.{Json, Reads}
 
 class SpecificCircumstanceIndicatorSpec extends SpecBase with Generators {
-  private val mockFrontendAppConfig = mock[FrontendAppConfig]
 
   "Country" - {
 
@@ -45,40 +42,19 @@ class SpecificCircumstanceIndicatorSpec extends SpecBase with Generators {
     }
 
     "must deserialise" - {
-      "when reading from reference data" - {
-        "when phase 5" in {
-          when(mockFrontendAppConfig.isPhase6Enabled).thenReturn(false)
-          implicit val reads: Reads[SpecificCircumstanceIndicator] = SpecificCircumstanceIndicator.reads(mockFrontendAppConfig)
-          forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
-            (code, description) =>
-              val value = SpecificCircumstanceIndicator(code, description)
-              Json
-                .parse(s"""
-                          |{
-                          |  "code": "$code",
-                          |  "description": "$description"
-                          |}
-                          |""".stripMargin)
-                .as[SpecificCircumstanceIndicator] mustEqual value
-          }
-
-        }
-
-        "when phase 6" in {
-          when(mockFrontendAppConfig.isPhase6Enabled).thenReturn(true)
-          implicit val reads: Reads[SpecificCircumstanceIndicator] = SpecificCircumstanceIndicator.reads(mockFrontendAppConfig)
-          forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
-            (code, description) =>
-              val value = SpecificCircumstanceIndicator(code, description)
-              Json
-                .parse(s"""
+      "when reading from reference data" in {
+        implicit val reads: Reads[SpecificCircumstanceIndicator] = SpecificCircumstanceIndicator.reads
+        forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
+          (code, description) =>
+            val value = SpecificCircumstanceIndicator(code, description)
+            Json
+              .parse(s"""
                           |{
                           |  "key": "$code",
                           |  "value": "$description"
                           |}
                           |""".stripMargin)
-                .as[SpecificCircumstanceIndicator] mustEqual value
-          }
+              .as[SpecificCircumstanceIndicator] mustEqual value
         }
       }
 
