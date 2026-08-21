@@ -18,16 +18,13 @@ package models.reference
 
 import base.SpecBase
 import cats.data.NonEmptySet
-import config.FrontendAppConfig
 import generators.Generators
 import models.reference.TransportMode.*
-import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import play.api.libs.json.Json
 
 class TransportModeSpec extends SpecBase with Generators {
-  private val mockFrontendAppConfig = mock[FrontendAppConfig]
 
   "TransportMode" - {
 
@@ -62,39 +59,18 @@ class TransportModeSpec extends SpecBase with Generators {
           }
         }
 
-        "when reading from reference data" - {
-          "when phase 5" in {
-            when(mockFrontendAppConfig.isPhase6Enabled).thenReturn(false)
-            forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
-              (code, description) =>
-                val value = InlandMode(code, description)
-                Json
-                  .parse(s"""
-                            |{
-                            |  "code": "$code",
-                            |  "description": "$description"
-                            |}
-                            |""".stripMargin)
-                  .as[InlandMode](InlandMode.reads(mockFrontendAppConfig)) mustEqual value
-            }
-
-          }
-
-          "when phase 6" in {
-            when(mockFrontendAppConfig.isPhase6Enabled).thenReturn(true)
-            forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
-              (code, description) =>
-                val value = InlandMode(code, description)
-                Json
-                  .parse(s"""
+        "when reading from reference data" in {
+          forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
+            (code, description) =>
+              val value = InlandMode(code, description)
+              Json
+                .parse(s"""
                                 |{
                                 |  "key": "$code",
                                 |  "value": "$description"
                                 |}
                                 |""".stripMargin)
-                  .as[InlandMode](InlandMode.reads(mockFrontendAppConfig)) mustEqual value
-            }
-
+                .as[InlandMode](InlandMode.reads) mustEqual value
           }
         }
       }
@@ -155,36 +131,17 @@ class TransportModeSpec extends SpecBase with Generators {
         }
 
         "when reading from reference data" - {
-          "when phase 5" in {
-            when(mockFrontendAppConfig.isPhase6Enabled).thenReturn(false)
-            forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
-              (code, description) =>
-                val value = BorderMode(code, description)
-                Json
-                  .parse(s"""
-                            |{
-                            |  "code": "$code",
-                            |  "description": "$description"
-                            |}
-                            |""".stripMargin)
-                  .as[BorderMode](BorderMode.reads(mockFrontendAppConfig)) mustEqual value
-            }
-          }
-
-          "when phase 6" in {
-            when(mockFrontendAppConfig.isPhase6Enabled).thenReturn(true)
-            forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
-              (code, description) =>
-                val value = BorderMode(code, description)
-                Json
-                  .parse(s"""
+          forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
+            (code, description) =>
+              val value = BorderMode(code, description)
+              Json
+                .parse(s"""
                             |{
                             |  "key": "$code",
                             |  "value": "$description"
                             |}
                             |""".stripMargin)
-                  .as[BorderMode](BorderMode.reads(mockFrontendAppConfig)) mustEqual value
-            }
+                .as[BorderMode](BorderMode.reads) mustEqual value
           }
         }
       }

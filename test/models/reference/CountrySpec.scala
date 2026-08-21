@@ -18,16 +18,13 @@ package models.reference
 
 import base.SpecBase
 import cats.data.NonEmptySet
-import config.FrontendAppConfig
 import generators.Generators
-import org.mockito.Mockito.when
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import play.api.libs.json.{Json, Reads}
 import uk.gov.hmrc.govukfrontend.views.viewmodels.select.SelectItem
 
 class CountrySpec extends SpecBase with Generators {
-  private val mockFrontendAppConfig = mock[FrontendAppConfig]
 
   "Country" - {
 
@@ -46,39 +43,19 @@ class CountrySpec extends SpecBase with Generators {
     }
 
     "must deserialise" - {
-      "when reading from reference data" - {
-        "when phase 5" in {
-          when(mockFrontendAppConfig.isPhase6Enabled).thenReturn(false)
-          implicit val reads: Reads[Country] = Country.reads(mockFrontendAppConfig)
-          forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
-            (code, description) =>
-              val country = Country(CountryCode(code), description)
-              Json
-                .parse(s"""
-                          |{
-                          |  "code": "$code",
-                          |  "description": "$description"
-                          |}
-                          |""".stripMargin)
-                .as[Country] mustEqual country
-          }
-        }
-
-        "when phase 6" in {
-          when(mockFrontendAppConfig.isPhase6Enabled).thenReturn(true)
-          implicit val reads: Reads[Country] = Country.reads(mockFrontendAppConfig)
-          forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
-            (code, description) =>
-              val country = Country(CountryCode(code), description)
-              Json
-                .parse(s"""
+      "when reading from reference data" in {
+        implicit val reads: Reads[Country] = Country.reads
+        forAll(Gen.alphaNumStr, Gen.alphaNumStr) {
+          (code, description) =>
+            val country = Country(CountryCode(code), description)
+            Json
+              .parse(s"""
                           |{
                           |  "key": "$code",
                           |  "value": "$description"
                           |}
                           |""".stripMargin)
-                .as[Country] mustEqual country
-          }
+              .as[Country] mustEqual country
         }
       }
 

@@ -17,7 +17,6 @@
 package models.reference
 
 import cats.Order
-import config.FrontendAppConfig
 import play.api.libs.json.*
 
 case class CountryCode(code: String) extends AnyVal
@@ -30,15 +29,9 @@ object CountryCode {
 
   implicit val format: Format[CountryCode] = Json.valueFormat[CountryCode]
 
-  def reads(config: FrontendAppConfig): Reads[CountryCode] = {
-    val key = if (config.isPhase6Enabled) "key" else "code"
-    (__ \ key).read[String].map(CountryCode(_))
-  }
+  val reads: Reads[CountryCode] = (__ \ "key").read[String].map(CountryCode(_))
 
-  def queryParams(code: String)(config: FrontendAppConfig): Seq[(String, String)] = {
-    val key = if (config.isPhase6Enabled) "keys" else "data.code"
-    Seq(key -> code)
-  }
+  def queryParams(code: String): Seq[(String, String)] = Seq("keys" -> code)
 
   implicit val order: Order[CountryCode] = (x: CountryCode, y: CountryCode) => (x, y).compareBy(_.code)
 }

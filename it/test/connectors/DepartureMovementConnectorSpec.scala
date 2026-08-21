@@ -23,7 +23,7 @@ import models.departureP5.{DepartureMessages, MessageMetaData, MessageType}
 import models.{LocalReferenceNumber, MessageStatus}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
-import play.api.test.Helpers.{running, OK}
+import play.api.test.Helpers.OK
 import scalaxb.XMLCalendar
 import uk.gov.hmrc.http.HttpResponse
 
@@ -34,14 +34,7 @@ import scala.xml.{Node, NodeSeq}
 
 class DepartureMovementConnectorSpec extends ItSpecBase with WireMockServerHandler {
 
-  private lazy val phase5App: GuiceApplicationBuilder => GuiceApplicationBuilder =
-    _ => guiceApplicationBuilder().configure("feature-flags.phase-6-enabled" -> false)
-
-  private lazy val phase6App: GuiceApplicationBuilder => GuiceApplicationBuilder =
-    _ =>
-      guiceApplicationBuilder()
-        .configure("feature-flags.phase-6-enabled" -> true)
-        .configure("feature-flags.phase-6-api-enabled" -> true)
+  private lazy val connector: DepartureMovementConnector = app.injector.instanceOf[DepartureMovementConnector]
 
   override def guiceApplicationBuilder(): GuiceApplicationBuilder =
     super
@@ -73,44 +66,18 @@ class DepartureMovementConnectorSpec extends ItSpecBase with WireMockServerHandl
            |""".stripMargin
       )
 
-      "when phase 5" - {
-        "must return LocalReferenceNumber" in {
-          running(phase5App) {
-            app =>
+      "must return LocalReferenceNumber" in {
 
-              val connector: DepartureMovementConnector = app.injector.instanceOf[DepartureMovementConnector]
+        server.stubFor(
+          get(urlEqualTo(s"/movements/departures/$departureId"))
+            .withHeader("Accept", equalTo("application/vnd.hmrc.3.0+json"))
+            .willReturn(okJson(responseJson.toString()))
+        )
 
-              server.stubFor(
-                get(urlEqualTo(s"/movements/departures/$departureId"))
-                  .withHeader("Accept", equalTo("application/vnd.hmrc.2.1+json"))
-                  .willReturn(okJson(responseJson.toString()))
-              )
+        val result = connector.getLRN(departureId).futureValue
 
-              val result = connector.getLRN(departureId).futureValue
+        result mustEqual LocalReferenceNumber("DEF456")
 
-              result mustEqual LocalReferenceNumber("DEF456")
-          }
-        }
-      }
-
-      "when phase 6" - {
-        "must return LocalReferenceNumber" in {
-          running(phase6App) {
-            app =>
-
-              val connector: DepartureMovementConnector = app.injector.instanceOf[DepartureMovementConnector]
-
-              server.stubFor(
-                get(urlEqualTo(s"/movements/departures/$departureId"))
-                  .withHeader("Accept", equalTo("application/vnd.hmrc.3.0+json"))
-                  .willReturn(okJson(responseJson.toString()))
-              )
-
-              val result = connector.getLRN(departureId).futureValue
-
-              result mustEqual LocalReferenceNumber("DEF456")
-          }
-        }
       }
     }
 
@@ -178,38 +145,14 @@ class DepartureMovementConnectorSpec extends ItSpecBase with WireMockServerHandl
         )
       )
 
-      "when phase 5" - {
-        "must return Messages" in {
+      "must return Messages" in {
+        server.stubFor(
+          get(urlEqualTo(s"/movements/departures/$departureId/messages"))
+            .withHeader("Accept", equalTo("application/vnd.hmrc.3.0+json"))
+            .willReturn(okJson(responseJson.toString()))
+        )
 
-          running(phase5App) {
-            app =>
-              val connector: DepartureMovementConnector = app.injector.instanceOf[DepartureMovementConnector]
-              server.stubFor(
-                get(urlEqualTo(s"/movements/departures/$departureId/messages"))
-                  .withHeader("Accept", equalTo("application/vnd.hmrc.2.1+json"))
-                  .willReturn(okJson(responseJson.toString()))
-              )
-
-              connector.getMessages(departureId).futureValue mustEqual expectedResult
-          }
-        }
-      }
-
-      "when phase 6" - {
-        "must return Messages" in {
-
-          running(phase6App) {
-            app =>
-              val connector: DepartureMovementConnector = app.injector.instanceOf[DepartureMovementConnector]
-              server.stubFor(
-                get(urlEqualTo(s"/movements/departures/$departureId/messages"))
-                  .withHeader("Accept", equalTo("application/vnd.hmrc.3.0+json"))
-                  .willReturn(okJson(responseJson.toString()))
-              )
-
-              connector.getMessages(departureId).futureValue mustEqual expectedResult
-          }
-        }
+        connector.getMessages(departureId).futureValue mustEqual expectedResult
       }
     }
 
@@ -217,7 +160,7 @@ class DepartureMovementConnectorSpec extends ItSpecBase with WireMockServerHandl
 
       val messageId = "messageId"
 
-      "when IE015 messageData" - {
+      "when IE015 messageData" in {
         val xml: Node =
           <ncts:CC015C xmlns:ncts="http://ncts.dgtaxud.ec">
             <messageSender>message sender</messageSender>
@@ -278,40 +221,19 @@ class DepartureMovementConnectorSpec extends ItSpecBase with WireMockServerHandl
           )
         )
 
-        "when phase 5" in {
-          running(phase5App) {
-            app =>
-              val connector: DepartureMovementConnector = app.injector.instanceOf[DepartureMovementConnector]
-              server.stubFor(
-                get(urlEqualTo(s"/movements/departures/$departureId/messages/$messageId/body"))
-                  .withHeader("Accept", equalTo("application/vnd.hmrc.2.1+xml"))
-                  .willReturn(ok(xml.toString()))
-              )
+        server.stubFor(
+          get(urlEqualTo(s"/movements/departures/$departureId/messages/$messageId/body"))
+            .withHeader("Accept", equalTo("application/vnd.hmrc.3.0+xml"))
+            .willReturn(ok(xml.toString()))
+        )
 
-              val result = connector.getMessage[CC015CType](departureId, messageId).futureValue
+        val result = connector.getMessage[CC015CType](departureId, messageId).futureValue
 
-              result mustEqual expectedResult
-          }
-        }
+        result mustEqual expectedResult
 
-        "when phase 6" in {
-          running(phase6App) {
-            app =>
-              val connector: DepartureMovementConnector = app.injector.instanceOf[DepartureMovementConnector]
-              server.stubFor(
-                get(urlEqualTo(s"/movements/departures/$departureId/messages/$messageId/body"))
-                  .withHeader("Accept", equalTo("application/vnd.hmrc.3.0+xml"))
-                  .willReturn(ok(xml.toString()))
-              )
-
-              val result = connector.getMessage[CC015CType](departureId, messageId).futureValue
-
-              result mustEqual expectedResult
-          }
-        }
       }
 
-      "when IE013 messageData" - {
+      "when IE013 messageData" in {
         val xml: Node =
           <ncts:CC013C xmlns:ncts="http://ncts.dgtaxud.ec">
             <messageSender>message sender</messageSender>
@@ -374,37 +296,16 @@ class DepartureMovementConnectorSpec extends ItSpecBase with WireMockServerHandl
           )
         )
 
-        "when phase 5" in {
-          running(phase5App) {
-            app =>
-              val connector: DepartureMovementConnector = app.injector.instanceOf[DepartureMovementConnector]
-              server.stubFor(
-                get(urlEqualTo(s"/movements/departures/$departureId/messages/$messageId/body"))
-                  .withHeader("Accept", equalTo("application/vnd.hmrc.2.1+xml"))
-                  .willReturn(ok(xml.toString()))
-              )
+        server.stubFor(
+          get(urlEqualTo(s"/movements/departures/$departureId/messages/$messageId/body"))
+            .withHeader("Accept", equalTo("application/vnd.hmrc.3.0+xml"))
+            .willReturn(ok(xml.toString()))
+        )
 
-              val result = connector.getMessage[CC013CType](departureId, messageId).futureValue
+        val result = connector.getMessage[CC013CType](departureId, messageId).futureValue
 
-              result mustEqual expectedResult
-          }
-        }
+        result mustEqual expectedResult
 
-        "when phase 6" in {
-          running(phase6App) {
-            app =>
-              val connector: DepartureMovementConnector = app.injector.instanceOf[DepartureMovementConnector]
-              server.stubFor(
-                get(urlEqualTo(s"/movements/departures/$departureId/messages/$messageId/body"))
-                  .withHeader("Accept", equalTo("application/vnd.hmrc.3.0+xml"))
-                  .willReturn(ok(xml.toString()))
-              )
-
-              val result = connector.getMessage[CC013CType](departureId, messageId).futureValue
-
-              result mustEqual expectedResult
-          }
-        }
       }
     }
 
@@ -414,44 +315,18 @@ class DepartureMovementConnectorSpec extends ItSpecBase with WireMockServerHandl
           <messageSender>token</messageSender>
         </ncts:CC170C>
 
-      "when phase 5" - {
-        "must return OK for successful response" in {
-          running(phase5App) {
-            app =>
-              val connector: DepartureMovementConnector = app.injector.instanceOf[DepartureMovementConnector]
-              server.stubFor(
-                post(urlEqualTo(s"/movements/departures/$departureId/messages"))
-                  .withRequestBody(equalTo(body.toString()))
-                  .withHeader("Accept", equalTo("application/vnd.hmrc.2.1+json"))
-                  .withHeader("Content-Type", equalTo("application/xml"))
-                  .willReturn(aResponse().withStatus(OK))
-              )
+      "must return OK for successful response" in {
+        server.stubFor(
+          post(urlEqualTo(s"/movements/departures/$departureId/messages"))
+            .withRequestBody(equalTo(body.toString()))
+            .withHeader("Accept", equalTo("application/vnd.hmrc.3.0+json"))
+            .withHeader("Content-Type", equalTo("application/xml"))
+            .willReturn(aResponse().withStatus(OK))
+        )
 
-              val result: HttpResponse = connector.submit(body, departureId).futureValue
+        val result: HttpResponse = connector.submit(body, departureId).futureValue
 
-              result.status mustEqual OK
-          }
-        }
-      }
-
-      "when phase 6" - {
-        "must return OK for successful response" in {
-          running(phase6App) {
-            app =>
-              val connector: DepartureMovementConnector = app.injector.instanceOf[DepartureMovementConnector]
-              server.stubFor(
-                post(urlEqualTo(s"/movements/departures/$departureId/messages"))
-                  .withRequestBody(equalTo(body.toString()))
-                  .withHeader("Accept", equalTo("application/vnd.hmrc.3.0+json"))
-                  .withHeader("Content-Type", equalTo("application/xml"))
-                  .willReturn(aResponse().withStatus(OK))
-              )
-
-              val result: HttpResponse = connector.submit(body, departureId).futureValue
-
-              result.status mustEqual OK
-          }
-        }
+        result.status mustEqual OK
       }
     }
   }

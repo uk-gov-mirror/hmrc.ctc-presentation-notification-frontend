@@ -17,7 +17,6 @@
 package models.reference.transport.transportMeans
 
 import cats.Order
-import config.FrontendAppConfig
 import models.reference.RichComparison
 import models.{DynamicEnumerableType, Radioable}
 import play.api.libs.functional.syntax.*
@@ -36,20 +35,13 @@ case class TransportMeansIdentification(`type`: String, description: String) ext
 
 object TransportMeansIdentification extends DynamicEnumerableType[TransportMeansIdentification] {
 
-  def reads(config: FrontendAppConfig): Reads[TransportMeansIdentification] =
-    if (config.isPhase6Enabled) {
-      (
-        (__ \ "key").read[String] and
-          (__ \ "value").read[String]
-      )(TransportMeansIdentification.apply)
-    } else {
-      Json.reads[TransportMeansIdentification]
-    }
+  val reads: Reads[TransportMeansIdentification] =
+    (
+      (__ \ "key").read[String] and
+        (__ \ "value").read[String]
+    )(TransportMeansIdentification.apply)
 
-  def queryParams(code: String)(config: FrontendAppConfig): Seq[(String, String)] = {
-    val key = if (config.isPhase6Enabled) "keys" else "data.type"
-    Seq(key -> code)
-  }
+  def queryParams(code: String): Seq[(String, String)] = Seq("keys" -> code)
 
   implicit val format: Format[TransportMeansIdentification] = Json.format[TransportMeansIdentification]
 
