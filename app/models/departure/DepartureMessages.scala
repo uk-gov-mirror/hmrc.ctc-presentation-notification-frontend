@@ -14,24 +14,12 @@
  * limitations under the License.
  */
 
-package models.departureP5
+package models.departure
 
-import models.MessageStatus
-import play.api.libs.json.{__, Reads}
+import play.api.libs.json.{Json, Reads}
 
-import java.time.LocalDateTime
+case class DepartureMessages(messages: List[MessageMetaData])
 
-case class MessageMetaData(received: LocalDateTime, messageType: MessageType, id: String, status: MessageStatus)
-
-object MessageMetaData {
-
-  implicit lazy val reads: Reads[MessageMetaData] = {
-    import play.api.libs.functional.syntax._
-    (
-      (__ \ "received").read[LocalDateTime] and
-        (__ \ "type").read[MessageType] and
-        (__ \ "id").read[String] and
-        (__ \ "status").read[MessageStatus]
-    )(MessageMetaData.apply)
-  }
+object DepartureMessages {
+  implicit val reads: Reads[DepartureMessages] = Json.reads[DepartureMessages]
 }

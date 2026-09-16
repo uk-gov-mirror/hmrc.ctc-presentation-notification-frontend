@@ -18,7 +18,7 @@ package connectors
 
 import config.FrontendAppConfig
 import models.LocalReferenceNumber
-import models.departureP5.*
+import models.departure.*
 import play.api.Logging
 import play.api.http.HeaderNames
 import play.api.http.HeaderNames.CONTENT_TYPE

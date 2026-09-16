@@ -19,7 +19,7 @@ package connectors
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import generated.*
 import itbase.{ItSpecBase, WireMockServerHandler}
-import models.departureP5.{DepartureMessages, MessageMetaData, MessageType}
+import models.departure.{DepartureMessages, MessageMetaData, MessageType}
 import models.{LocalReferenceNumber, MessageStatus}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}

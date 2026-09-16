@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package models.departureP5
+package models.departure
 
 import play.api.libs.json.{__, Reads}
 
