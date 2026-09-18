@@ -20,8 +20,8 @@ import cats.data.OptionT
 import config.Constants.AdditionalDeclarationType.*
 import connectors.DepartureMovementConnector
 import generated.*
-import models.departureP5.MessageType.*
-import models.departureP5.{MessageMetaData, MessageType}
+import models.departure.MessageType.*
+import models.departure.{MessageMetaData, MessageType}
 import models.{LocalReferenceNumber, MessageStatus, RichCC013CType}
 import play.api.Logging
 import scalaxb.XMLFormat
@@ -31,11 +31,11 @@ import java.time.LocalDateTime
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class DepartureMessageService @Inject() (departureMovementP5Connector: DepartureMovementConnector) extends Logging {
+class DepartureMessageService @Inject() (departureMovementConnector: DepartureMovementConnector) extends Logging {
 
   private def getMessages(departureId: String)(implicit ec: ExecutionContext, hc: HeaderCarrier): Future[List[MessageMetaData]] = {
     implicit val ordering: Ordering[MessageMetaData] = Ordering.by[MessageMetaData, LocalDateTime](_.received).reverse
-    departureMovementP5Connector
+    departureMovementConnector
       .getMessages(departureId)
       .map {
         _.messages
@@ -77,10 +77,10 @@ class DepartureMessageService @Inject() (departureMovementP5Connector: Departure
     } yield message).value
 
   def getLRN(departureId: String)(implicit hc: HeaderCarrier): Future[LocalReferenceNumber] =
-    departureMovementP5Connector.getLRN(departureId)
+    departureMovementConnector.getLRN(departureId)
 
   private def getMessage[T](departureId: String, messageId: String)(implicit hc: HeaderCarrier, format: XMLFormat[T]): Future[T] =
-    departureMovementP5Connector.getMessage(departureId, messageId)
+    departureMovementConnector.getMessage(departureId, messageId)
 
   // To reduce the overhead we call this once in the IndexController rather than repeatedly through an action
   // Otherwise we would have to fetch the LRN and IE013/IE015 each time

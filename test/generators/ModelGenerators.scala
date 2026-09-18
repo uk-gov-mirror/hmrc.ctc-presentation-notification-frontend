@@ -19,8 +19,8 @@ package generators
 import models.*
 import models.AddressLine.{City, NumberAndStreet, PostalCode}
 import models.StringFieldRegex.{coordinatesLatitudeMaxRegex, coordinatesLongitudeMaxRegex}
-import models.departureP5.MessageType
-import models.departureP5.MessageType.*
+import models.departure.MessageType
+import models.departure.MessageType.*
 import models.reference.*
 import models.reference.TransportMode.*
 import models.reference.transport.border.active

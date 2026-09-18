@@ -21,8 +21,8 @@ import config.Constants.AdditionalDeclarationType
 import connectors.DepartureMovementConnector
 import generated.{CC013CType, CC015CType, CC170CType}
 import generators.Generators
-import models.departureP5.MessageType.*
-import models.departureP5.{DepartureMessages, MessageMetaData}
+import models.departure.MessageType.*
+import models.departure.{DepartureMessages, MessageMetaData}
 import models.{MessageStatus, RichCC013CType}
 import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, verify, verifyNoInteractions, when}
